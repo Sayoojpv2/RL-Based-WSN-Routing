@@ -1,4 +1,4 @@
-% generate_seed_validation.m
+﻿% generate_seed_validation.m
 % Extracts per-seed data from analysis/all_runs_raw.mat, computes statistics,
 % calculates paired differences across seeds, generates analysis/seed_validation.txt,
 % and prints the complete report to the command window.
@@ -7,9 +7,12 @@ clc; clear; close all;
 
 currentDir = fileparts(mfilename('fullpath'));
 if isempty(currentDir); currentDir = pwd; end
-analysisDir = fullfile(currentDir, 'analysis');
 
-load(fullfile(analysisDir, 'all_runs_raw.mat'), 'res_accum');
+rawFile = fullfile(currentDir, 'results', 'raw', 'all_runs_raw.mat');
+if ~exist(rawFile, 'file')
+    rawFile = fullfile(currentDir, 'analysis', 'all_runs_raw.mat');
+end
+load(rawFile, 'res_accum');
 
 seeds = [42, 43, 44, 45, 46];
 num_seeds = length(seeds);
@@ -64,7 +67,7 @@ txt{end+1} = '                                    WSN Routing: LEACH, DEEC, PEGA
 txt{end+1} = '========================================================================================================================';
 txt{end+1} = sprintf('Seeds Evaluated: %s', mat2str(seeds));
 txt{end+1} = 'Network Parameters: 50 nodes, 600m river, 2.0 J initial energy, 4000-bit packets, 1000 rounds, failure at round 500';
-txt{end+1} = 'Source Data: analysis/all_runs_raw.mat';
+txt{end+1} = 'Source Data: results/raw/all_runs_raw.mat';
 txt{end+1} = '';
 
 % 1. INDIVIDUAL PROTOCOL PER-SEED TABLES
@@ -255,9 +258,12 @@ txt{end+1} = '==================================================================
 
 % Save to file
 out_str = strjoin(txt, '\n');
-fid = fopen(fullfile(analysisDir, 'seed_validation.txt'), 'w');
+valDir = fullfile(currentDir, 'results', 'validation');
+if ~exist(valDir, 'dir'); mkdir(valDir); end
+fid = fopen(fullfile(valDir, 'seed_validation.txt'), 'w');
 fprintf(fid, '%s\n', out_str);
 fclose(fid);
 
 % Print to command window
 fprintf('%s\n', out_str);
+

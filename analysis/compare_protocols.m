@@ -1,4 +1,4 @@
-clc;
+﻿clc;
 close all;
 
 % =========================================================
@@ -6,16 +6,21 @@ close all;
 % =========================================================
 
 projectRoot = fileparts(fileparts(mfilename('fullpath')));
-analysisDir = fullfile(projectRoot, 'analysis');
+if isempty(projectRoot); projectRoot = pwd; end
+
+protoDir = fullfile(projectRoot, 'results', 'protocol_results');
+if ~exist(protoDir, 'dir')
+    protoDir = fullfile(projectRoot, 'analysis');
+end
 
 % =========================================================
 % LOAD ACTUAL SAVED RESULTS
 % =========================================================
 
-Ldata = load(fullfile(analysisDir, 'LEACH_results.mat'));
-Ddata = load(fullfile(analysisDir, 'DEEC_results.mat'));
-Pdata = load(fullfile(analysisDir, 'PEGASIS_results.mat'));
-Rdata = load(fullfile(analysisDir, 'RL_HAR_results.mat'));
+Ldata = load(fullfile(protoDir, 'LEACH_results.mat'));
+Ddata = load(fullfile(protoDir, 'DEEC_results.mat'));
+Pdata = load(fullfile(protoDir, 'PEGASIS_results.mat'));
+Rdata = load(fullfile(protoDir, 'RL_HAR_results.mat'));
 
 L = Ldata.LEACH_results;
 D = Ddata.DEEC_results;

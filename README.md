@@ -143,8 +143,8 @@ addpath('analysis');
 final_results;
 ```
 This generates and displays:
-1. `analysis/final_plots_dashboard.png` (Network lifetime, PDR trajectory, energy efficiency, energy per report, failure recovery, unified legend).
-2. `analysis/final_comparison_table.png` (Complete numerical table and statistical findings).
+1. `results/figures/final_plots_dashboard.png` (Network lifetime, PDR trajectory, energy efficiency, energy per report, failure recovery, unified legend).
+2. `results/figures/final_comparison_table.png` (Complete numerical table and statistical findings).
 
 ### Verify Numerical Integrity Across Seeds
 To inspect the per-seed breakdown and verify data source integrity:
@@ -165,3 +165,4 @@ run_full_evaluation;
 ## 6. Requirements
 - MATLAB R2020a or later
 - No proprietary toolboxes required (all algorithms, channel modeling, and RL engines are implemented in native MATLAB code).
+

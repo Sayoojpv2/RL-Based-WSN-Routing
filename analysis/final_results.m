@@ -1,4 +1,4 @@
-% analysis/final_results.m
+﻿% analysis/final_results.m
 % =========================================================================
 % FINAL PUBLICATION-GRADE GRAPH VISUALIZATION & ANALYSIS
 % Loads validated trajectory data directly from analysis/all_runs_raw.mat
@@ -20,17 +20,27 @@
 
 clc; close all;
 
-currentDir = fileparts(mfilename('fullpath'));
-if isempty(currentDir); currentDir = pwd; end
-analysisDir = currentDir;
-if ~exist(fullfile(analysisDir, 'all_runs_raw.mat'), 'file')
-    analysisDir = fullfile(currentDir, 'analysis');
+scriptDir = fileparts(mfilename('fullpath'));
+if isempty(scriptDir); scriptDir = pwd; end
+if exist(fullfile(scriptDir, 'results'), 'dir')
+    projectRoot = scriptDir;
+else
+    projectRoot = fileparts(scriptDir);
 end
 
-dataFile = fullfile(analysisDir, 'all_runs_raw.mat');
+dataFile = fullfile(projectRoot, 'results', 'raw', 'all_runs_raw.mat');
+if ~exist(dataFile, 'file')
+    dataFile = fullfile(projectRoot, 'analysis', 'all_runs_raw.mat');
+end
+if ~exist(dataFile, 'file')
+    dataFile = fullfile(scriptDir, 'all_runs_raw.mat');
+end
 if ~exist(dataFile, 'file')
     error('Validated data file not found: %s', dataFile);
 end
+
+figDir = fullfile(projectRoot, 'results', 'figures');
+if ~exist(figDir, 'dir'); mkdir(figDir); end
 
 fprintf('Loading validated trajectory data from: %s\n', dataFile);
 load(dataFile, 'res_accum');
@@ -220,7 +230,7 @@ text(830, 26.5, '50% HND Level', 'FontSize', 8.0, 'Color', [0.35, 0.35, 0.35], '
 
 xlabel('Simulation Round', 'FontWeight', 'bold', 'FontSize', 11, 'Color', 'k');
 ylabel('Number of Alive Nodes', 'FontWeight', 'bold', 'FontSize', 11, 'Color', 'k');
-title('Network Lifetime — Alive Nodes vs Simulation Round', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
+title('Network Lifetime â€” Alive Nodes vs Simulation Round', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
 xlim([1, 1000]); ylim([0, 52]);
 
 % -------------------------------------------------------------------------
@@ -384,8 +394,8 @@ sgtitle({'RL-Hybrid vs Baseline Protocols (LEACH, DEEC, PEGASIS)'; ...
         'FontSize', 13.5, 'FontWeight', 'bold', 'Color', 'k', 'FontName', font_name);
 
 % Save Figure 1 (Dashboard)
-fig1_png = fullfile(analysisDir, 'final_plots_dashboard.png');
-fig1_pdf = fullfile(analysisDir, 'final_plots_dashboard.pdf');
+fig1_png = fullfile(figDir, 'final_plots_dashboard.png');
+fig1_pdf = fullfile(figDir, 'final_plots_dashboard.pdf');
 saveas(fig1, fig1_png);
 try exportgraphics(fig1, fig1_pdf, 'ContentType', 'vector'); catch; end
 
@@ -497,8 +507,8 @@ xlim(ax2, [0, 1]);
 ylim(ax2, [0.02, 1.08]);
 
 % Save Figure 2 (Table)
-fig2_png = fullfile(analysisDir, 'final_comparison_table.png');
-fig2_pdf = fullfile(analysisDir, 'final_comparison_table.pdf');
+fig2_png = fullfile(figDir, 'final_comparison_table.png');
+fig2_pdf = fullfile(figDir, 'final_comparison_table.pdf');
 saveas(fig2, fig2_png);
 try exportgraphics(fig2, fig2_pdf, 'ContentType', 'vector'); catch; end
 
@@ -537,3 +547,4 @@ if exist(fig1_pdf, 'file'); fprintf('                         %s\n', fig1_pdf); 
 fprintf('  2. Figure 2 Table    : %s\n', fig2_png);
 if exist(fig2_pdf, 'file'); fprintf('                         %s\n', fig2_pdf); end
 fprintf('\nExecution complete. All figures displayed on screen and saved to disk.\n');
+

@@ -1,4 +1,4 @@
-% run_experiments.m
+﻿% run_experiments.m
 % Master runner for the WSN Simulation
 clc; clear; close all;
 
@@ -103,8 +103,9 @@ end
 fprintf('\n==================================================\n');
 fprintf('Averaging results and saving files...\n');
 
-analysisDir = fullfile(currentDir, 'analysis');
-if ~exist(analysisDir, 'dir'); mkdir(analysisDir); end
+protoDir = fullfile(currentDir, 'results', 'protocol_results');
+if ~exist(protoDir, 'dir'); mkdir(protoDir); end
+
 
 % Extract environment template for saving
 [wsn_env_template, ~, ~] = generate_scenario(seeds(1));
@@ -123,7 +124,7 @@ LEACH_results.energyStdDev = mean(res_accum.LEACH.e_std, 1, 'omitnan');
 LEACH_results.FND = round(mean(res_accum.LEACH.FND, 'omitnan'));
 LEACH_results.HND = round(mean(res_accum.LEACH.HND, 'omitnan'));
 LEACH_results.LND = round(mean(res_accum.LEACH.LND, 'omitnan'));
-save(fullfile(analysisDir, 'LEACH_results.mat'), 'LEACH_results');
+save(fullfile(protoDir, 'LEACH_results.mat'), 'LEACH_results');
 
 DEEC_results = struct();
 DEEC_results.wsn_env = wsn_env_template;
@@ -139,7 +140,7 @@ DEEC_results.energyStdDev = mean(res_accum.DEEC.e_std, 1, 'omitnan');
 DEEC_results.FND = round(mean(res_accum.DEEC.FND, 'omitnan'));
 DEEC_results.HND = round(mean(res_accum.DEEC.HND, 'omitnan'));
 DEEC_results.LND = round(mean(res_accum.DEEC.LND, 'omitnan'));
-save(fullfile(analysisDir, 'DEEC_results.mat'), 'DEEC_results');
+save(fullfile(protoDir, 'DEEC_results.mat'), 'DEEC_results');
 
 PEGASIS_results = struct();
 PEGASIS_results.wsn_env = wsn_env_template;
@@ -155,7 +156,7 @@ PEGASIS_results.energyStdDev = mean(res_accum.PEGASIS.e_std, 1, 'omitnan');
 PEGASIS_results.FND = round(mean(res_accum.PEGASIS.FND, 'omitnan'));
 PEGASIS_results.HND = round(mean(res_accum.PEGASIS.HND, 'omitnan'));
 PEGASIS_results.LND = round(mean(res_accum.PEGASIS.LND, 'omitnan'));
-save(fullfile(analysisDir, 'PEGASIS_results.mat'), 'PEGASIS_results');
+save(fullfile(protoDir, 'PEGASIS_results.mat'), 'PEGASIS_results');
 
 RL_HAR_results = struct();
 RL_HAR_results.wsn_env = wsn_env_template;
@@ -171,7 +172,8 @@ RL_HAR_results.energyStdDev = mean(res_accum.RL_Hybrid.e_std, 1, 'omitnan');
 RL_HAR_results.FND = round(mean(res_accum.RL_Hybrid.FND, 'omitnan'));
 RL_HAR_results.HND = round(mean(res_accum.RL_Hybrid.HND, 'omitnan'));
 RL_HAR_results.LND = round(mean(res_accum.RL_Hybrid.LND, 'omitnan'));
-save(fullfile(analysisDir, 'RL_HAR_results.mat'), 'RL_HAR_results');
+save(fullfile(protoDir, 'RL_HAR_results.mat'), 'RL_HAR_results');
 
-fprintf('Successfully wrote averaged data to analysis/ directory.\n');
+fprintf('Successfully wrote averaged data to results/protocol_results/ directory.\n');
 fprintf('Ready for graphing.\n');
+

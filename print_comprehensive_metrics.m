@@ -1,4 +1,4 @@
-% print_comprehensive_metrics.m
+﻿% print_comprehensive_metrics.m
 % Computes and displays complete numerical metrics for all 4 protocols
 % across the 5 seeds, including period breakdowns and direct comparisons.
 
@@ -9,7 +9,11 @@ if isempty(currentDir); currentDir = pwd; end
 addpath(fullfile(currentDir, 'simulation'));
 addpath(fullfile(currentDir, 'analysis'));
 
-load(fullfile(currentDir, 'analysis', 'all_runs_raw.mat'), 'res_accum');
+rawFile = fullfile(currentDir, 'results', 'raw', 'all_runs_raw.mat');
+if ~exist(rawFile, 'file')
+    rawFile = fullfile(currentDir, 'analysis', 'all_runs_raw.mat');
+end
+load(rawFile, 'res_accum');
 
 protocols = {'LEACH', 'DEEC', 'PEGASIS', 'RL_Hybrid'};
 prot_labels = {'LEACH', 'DEEC', 'PEGASIS', 'RL-Hybrid'};
@@ -17,8 +21,9 @@ periods = {'Full (1-1000)', 'Pre-Failure (1-499)', 'Failure Region (500)', 'Post
 ranges = {1:1000, 1:499, 500:500, 501:1000};
 num_runs = 5;
 
-% First, update the individual .mat result files in analysis/
-analysisDir = fullfile(currentDir, 'analysis');
+% Update the individual .mat result files in results/protocol_results/
+protoDir = fullfile(currentDir, 'results', 'protocol_results');
+if ~exist(protoDir, 'dir'); mkdir(protoDir); end
 [wsn_env_template, ~, ~] = generate_scenario(42);
 
 for p = 1:length(protocols)
@@ -43,7 +48,7 @@ for p = 1:length(protocols)
     res_struct.LND = round(mean(res_accum.(pk).LND, 'omitnan'));
     
     eval([save_name, '_results = res_struct;']);
-    save(fullfile(analysisDir, [save_name, '_results.mat']), [save_name, '_results'], '-v7');
+    save(fullfile(protoDir, [save_name, '_results.mat']), [save_name, '_results'], '-v7');
 end
 
 % Data containers for comparison tables
@@ -247,3 +252,4 @@ fprintf('  Failure Recovery at Round 500   : Successfully bypassed failed nodes 
 fprintf('                                     Delivered 43.0/46.6 reports in round 500 (92.69%% PDR)\n');
 fprintf('                                     Post-failure PDR (rounds 501-1000) maintained at 83.58%%\n');
 fprintf('========================================================================================================\n');
+

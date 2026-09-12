@@ -1,4 +1,4 @@
-% run_full_evaluation.m
+﻿% run_full_evaluation.m
 % Master Evaluation Script for 5-Seed WSN Experiment
 % Compares LEACH, DEEC, PEGASIS, and RL-HAR v2
 
@@ -131,10 +131,14 @@ for p = 1:length(protocols)
     res_struct.FND = round(mean(res_accum.(prot).FND, 'omitnan'));
     res_struct.HND = round(mean(res_accum.(prot).HND, 'omitnan'));
     res_struct.LND = round(mean(res_accum.(prot).LND, 'omitnan'));
+    protoDir = fullfile(currentDir, 'results', 'protocol_results');
+    if ~exist(protoDir, 'dir'); mkdir(protoDir); end
     eval([save_name, '_results = res_struct;']);
-    save(fullfile(analysisDir, [save_name, '_results.mat']), [save_name, '_results'], '-v7');
+    save(fullfile(protoDir, [save_name, '_results.mat']), [save_name, '_results'], '-v7');
 end
-save(fullfile(analysisDir, 'all_runs_raw.mat'), 'res_accum', '-v7');
+rawDir = fullfile(currentDir, 'results', 'raw');
+if ~exist(rawDir, 'dir'); mkdir(rawDir); end
+save(fullfile(rawDir, 'all_runs_raw.mat'), 'res_accum', '-v7');
 
 % =========================================================================
 % COMPUTE METRICS ACROSS ALL ROUNDS AND PER PERIOD
@@ -329,3 +333,4 @@ end
 fprintf('\n====================================================================\n');
 fprintf('  EXPERIMENT COMPLETE AND VERIFIED.\n');
 fprintf('====================================================================\n');
+

@@ -4,7 +4,7 @@
 ========================================================================================================================
 Seeds Evaluated: [42 43 44 45 46]
 Network Parameters: 50 nodes, 600m river, 2.0 J initial energy, 4000-bit packets, 1000 rounds, failure at round 500
-Source Data: analysis/all_runs_raw.mat
+Source Data: results/raw/all_runs_raw.mat
 
 ------------------------------------------------------------------------------------------------------------------------
   PROTOCOL: LEACH (Per-Seed Breakdown)

@@ -35,9 +35,9 @@ fprintf('=======================================================================
 fprintf('  RL-BASED ADAPTIVE WSN ROUTING: BENCHMARK & EVALUATION SUITE\n');
 fprintf('  Protocols: LEACH | DEEC | PEGASIS | RL-Hybrid (Proposed)\n');
 fprintf('========================================================================================\n');
-fprintf('  1. Display Validated 5-Seed Dashboard & Summary Table (analysis/final_results.m)\n');
+fprintf('  1. Display Validated 5-Seed Dashboard & Summary Table (analysis/final_results.m -> results/figures/)\n');
 fprintf('  2. Print Statistical Performance Summary across 5 Seeds (print_comprehensive_metrics.m)\n');
-fprintf('  3. Validate 5-Seed Trajectory Data Integrity (generate_seed_validation.m)\n');
+fprintf('  3. Validate 5-Seed Trajectory Data Integrity (generate_seed_validation.m -> results/validation/)\n');
 fprintf('  4. Re-run Full 5-Seed Simulation from Scratch (run_full_evaluation.m)\n');
 fprintf('  5. Run Multi-Run Experiment Suite (run_experiments.m)\n');
 fprintf('========================================================================================\n');
@@ -67,3 +67,4 @@ switch strtrim(choice)
         fprintf('\n[Defaulting to Option 1: Display Validated Dashboard & Summary Table]\n');
         final_results();
 end
+
