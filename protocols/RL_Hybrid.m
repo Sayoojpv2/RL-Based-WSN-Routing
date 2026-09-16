@@ -88,7 +88,6 @@ function res = RL_Hybrid(wsn_env, lq_history, success_history, seed)
     min_rx_energy = rx_energy(wsn_env.packetSize, wsn_env);
     
     for r = 1:ar
-        energy_start = sum(E_residual(is_alive));
         node_load = zeros(1, numNodes);
         
         % COMMON FAILURE EVENT AT ROUND 500
@@ -101,6 +100,7 @@ function res = RL_Hybrid(wsn_env, lq_history, success_history, seed)
             end
         end
         is_alive = (E_residual > 0) & ~has_failed;
+        energy_start = sum(E_residual(is_alive));
         num_alive = sum(is_alive);
         
         if num_alive == 0
@@ -514,7 +514,7 @@ function res = RL_Hybrid(wsn_env, lq_history, success_history, seed)
         
         energy_end = sum(E_residual(is_alive));
         m_alive(r) = sum(is_alive);
-        m_totalEnergy(r) = sum(E_residual);
+        m_totalEnergy(r) = sum(E_residual(is_alive));
         m_del(r) = del_this_round;
         if del_this_round > 0
             m_delay(r) = delay_sum_this_round / del_this_round;

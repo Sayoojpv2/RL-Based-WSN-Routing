@@ -73,14 +73,14 @@ All metrics report the mean $\pm$ standard deviation calculated across the 5 val
 | **Final Alive Nodes (Round 1000)** | $6.2 \pm 5.8$ | $3.8 \pm 5.0$ | $23.4 \pm 3.3$ | $14.0 \pm 14.9$ |
 | **Packet Delivery Ratio (PDR)** | $62.79\% \pm 5.24\%$ | $57.13\% \pm 3.93\%$ | $29.23\% \pm 1.53\%$ | **$86.10\% \pm 0.53\%$** |
 | **Successfully Delivered Reports** | $9,260 \pm 2,968$ | $8,018 \pm 2,835$ | $10,349 \pm 542$ | **$31,889 \pm 5,318$** |
-| **Total Routing Energy Consumed** | $97.0 \pm 2.7$ J | $98.7 \pm 1.8$ J | $70.8 \pm 5.4$ J | $90.6 \pm 12.7$ J |
-| **Energy per Delivered Report** | $0.0114 \pm 0.0039$ J | $0.0136 \pm 0.0050$ J | $0.0069 \pm 0.0008$ J | **$0.0029 \pm 0.0007$ J** |
-| **Energy Efficiency** | $96.1 \pm 33.0$ rep/J | $81.6 \pm 30.5$ rep/J | $147.3 \pm 18.6$ rep/J | **$365.9 \pm 129.4$ rep/J** |
+| **Total Routing Energy Consumed** | $97.0 \pm 2.7$ J | $98.7 \pm 1.8$ J | $70.8 \pm 5.4$ J | **$87.2 \pm 12.3$ J** |
+| **Energy per Delivered Report** | $0.010478$ J | $0.012315$ J | $0.006841$ J | **$0.002736$ J** |
+| **Energy Efficiency** | $95.4$ rep/J | $81.2$ rep/J | $146.2$ rep/J | **$365.6$ rep/J** |
 
 ### Key Findings & Nuances
 - **Highest Packet Delivery Ratio**: RL-Hybrid achieves $86.10\% \pm 0.53\%$ PDR, significantly higher than LEACH ($62.79\%$), DEEC ($57.13\%$), and PEGASIS ($29.23\%$).
-- **Highest Energy Efficiency**: RL-Hybrid delivers $365.9 \pm 129.4$ reports/J compared to $96.1$ for LEACH, $81.6$ for DEEC, and $147.3$ for PEGASIS.
-- **Lowest Cost per Report**: RL-Hybrid requires $0.0029 \pm 0.0007$ J/delivered report (vs. $0.0114$ J for LEACH and $0.0069$ J for PEGASIS).
+- **Highest Energy Efficiency**: RL-Hybrid delivers $365.6$ reports/J compared to $95.4$ for LEACH, $81.2$ for DEEC, and $146.2$ for PEGASIS.
+- **Lowest Cost per Report**: RL-Hybrid requires $0.002736$ J/delivered report (vs. $0.010478$ J for LEACH, $0.012315$ J for DEEC, and $0.006841$ J for PEGASIS).
 - **Longest Full-Network Stability (FND)**: RL-Hybrid preserves all 50 nodes intact until round $475.4 \pm 55.0$ (vs. round $23.2$ for LEACH and $74.0$ for PEGASIS).
 - **HND Trade-off**: PEGASIS achieves superior HND ($772.0 \pm 161.2$ rounds) because its chain aggregates all node observations into a single packet per round, severely reducing transmissions but resulting in high packet loss ($29.23\%$ PDR) when chain links fail.
 
@@ -115,9 +115,7 @@ RL-Based-WSN-Routing/
     ├── all_runs_raw.mat           # Validated 5-seed 1000-round trajectory dataset
     ├── final_results.m            # Script to generate publication dashboard & table
     ├── final_plots_dashboard.png  # Figure 1: 6-subplot trajectory dashboard
-    ├── final_plots_dashboard.pdf  # Figure 1: Vector PDF
     ├── final_comparison_table.png # Figure 2: Statistical summary table
-    ├── final_comparison_table.pdf # Figure 2: Vector PDF
     ├── seed_validation.txt        # Per-seed verification output
     ├── compare_protocols.m        # Comparative plotting utility
     ├── LEACH_results.mat          # Averaged LEACH trajectories

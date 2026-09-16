@@ -1,8 +1,8 @@
-﻿% analysis/final_results.m
+% analysis/final_results.m
 % =========================================================================
 % FINAL PUBLICATION-GRADE GRAPH VISUALIZATION & ANALYSIS
 % Loads validated trajectory data directly from analysis/all_runs_raw.mat
-% 
+%
 % Design Standards:
 % 1. Pure White backgrounds for all figures, axes, cards, and tables.
 % 2. 100% crisp Black/Dark text (titles, axis labels, ticks, values).
@@ -20,21 +20,17 @@
 
 clc; close all;
 
-scriptDir = fileparts(mfilename('fullpath'));
-if isempty(scriptDir); scriptDir = pwd; end
-if exist(fullfile(scriptDir, 'results'), 'dir')
-    projectRoot = scriptDir;
+currentDir = fileparts(mfilename('fullpath'));
+if isempty(currentDir); currentDir = pwd; end
+if exist(fullfile(currentDir, 'all_runs_raw.mat'), 'file')
+    projectRoot = fileparts(currentDir);
+    analysisDir = currentDir;
 else
-    projectRoot = fileparts(scriptDir);
+    projectRoot = currentDir;
+    analysisDir = fullfile(currentDir, 'analysis');
 end
 
-dataFile = fullfile(projectRoot, 'results', 'raw', 'all_runs_raw.mat');
-if ~exist(dataFile, 'file')
-    dataFile = fullfile(projectRoot, 'analysis', 'all_runs_raw.mat');
-end
-if ~exist(dataFile, 'file')
-    dataFile = fullfile(scriptDir, 'all_runs_raw.mat');
-end
+dataFile = fullfile(analysisDir, 'all_runs_raw.mat');
 if ~exist(dataFile, 'file')
     error('Validated data file not found: %s', dataFile);
 end
@@ -91,35 +87,35 @@ seed_data = struct();
 
 for p = 1:length(protocols)
     pk = protocols{p};
-    
+
     alv_m = res_accum.(pk).alive;
     alv_m(isnan(alv_m)) = 0; % replace post-extinction NaNs with 0
-    
+
     gen_m = res_accum.(pk).gen;
     gen_m(isnan(gen_m)) = 0;
-    
+
     del_m = res_accum.(pk).del;
     del_m(isnan(del_m)) = 0;
-    
+
     eng_m = res_accum.(pk).r_energy;
     eng_m(isnan(eng_m)) = 0;
-    
+
     delay_m = res_accum.(pk).delay;
-    
+
     % ---------------------------------------------------------------------
     % A. PER-SEED ROUND TRAJECTORIES
     % ---------------------------------------------------------------------
     pdr_seed_traj = zeros(num_runs, 1000);
-    
+
     for s = 1:num_runs
         pdr_s = (del_m(s, :) ./ max(1, gen_m(s, :))) * 100;
         pdr_s(gen_m(s, :) == 0) = NaN;
         pdr_seed_traj(s, :) = pdr_s;
     end
-    
+
     data_avg.(pk).alive     = mean(alv_m, 1);
     data_avg.(pk).pdr_round = mean(pdr_seed_traj, 1, 'omitnan');
-    
+
     % ---------------------------------------------------------------------
     % B. PER-SEED SUMMARY METRICS (Mean +/- SD across seeds)
     % ---------------------------------------------------------------------
@@ -131,12 +127,12 @@ for p = 1:length(protocols)
     eff_seeds       = zeros(1, num_runs);
     alive_end_seeds = zeros(1, num_runs);
     delay_seeds     = zeros(1, num_runs);
-    
+
     for s = 1:num_runs
         del_s = sum(del_m(s, :));
         gen_s = sum(gen_m(s, :));
         eng_s = sum(eng_m(s, :));
-        
+
         pdr_seeds(s)       = (del_s / max(1, gen_s)) * 100;
         del_seeds(s)       = del_s;
         gen_seeds(s)       = gen_s;
@@ -144,7 +140,7 @@ for p = 1:length(protocols)
         eper_seeds(s)      = eng_s / max(1, del_s);
         eff_seeds(s)       = del_s / max(1e-4, eng_s);
         alive_end_seeds(s) = alv_m(s, end);
-        
+
         delays_valid = delay_m(s, ~isnan(delay_m(s, :)));
         if ~isempty(delays_valid)
             delay_seeds(s) = mean(delays_valid);
@@ -152,11 +148,11 @@ for p = 1:length(protocols)
             delay_seeds(s) = NaN;
         end
     end
-    
+
     fnd_seeds = res_accum.(pk).FND;
     hnd_seeds = res_accum.(pk).HND;
     lnd_seeds = res_accum.(pk).LND;
-    
+
     % Store raw vectors
     seed_data.(pk).pdr       = pdr_seeds;
     seed_data.(pk).del       = del_seeds;
@@ -168,7 +164,7 @@ for p = 1:length(protocols)
     seed_data.(pk).lnd       = lnd_seeds;
     seed_data.(pk).alive_end = alive_end_seeds;
     seed_data.(pk).delay     = delay_seeds;
-    
+
     % Summary Statistics
     data_avg.(pk).pdr_mean       = mean(pdr_seeds);
     data_avg.(pk).pdr_std        = std(pdr_seeds);
@@ -180,16 +176,23 @@ for p = 1:length(protocols)
     data_avg.(pk).eper_std       = std(eper_seeds);
     data_avg.(pk).eff_mean       = mean(eff_seeds);
     data_avg.(pk).eff_std        = std(eff_seeds);
+
+    % Aggregate Network-Level Ratios
+    total_del_pk = sum(del_seeds);
+    total_eng_pk = sum(eng_seeds);
+    data_avg.(pk).eff_agg        = total_del_pk / max(1e-4, total_eng_pk);
+    data_avg.(pk).eper_agg       = total_eng_pk / max(1, total_del_pk);
+
     data_avg.(pk).alive_end_mean = mean(alive_end_seeds);
     data_avg.(pk).alive_end_std  = std(alive_end_seeds);
     data_avg.(pk).delay_mean     = mean(delay_seeds, 'omitnan');
     data_avg.(pk).delay_std      = std(delay_seeds, 'omitnan');
-    
+
     data_avg.(pk).fnd_mean       = mean(fnd_seeds, 'omitnan');
     data_avg.(pk).fnd_std        = std(fnd_seeds, 'omitnan');
     data_avg.(pk).hnd_mean       = mean(hnd_seeds, 'omitnan');
     data_avg.(pk).hnd_std        = std(hnd_seeds, 'omitnan');
-    
+
     valid_lnd = lnd_seeds(~isnan(lnd_seeds));
     if isempty(valid_lnd)
         data_avg.(pk).lnd_str = '>1000';
@@ -230,7 +233,7 @@ text(830, 26.5, '50% HND Level', 'FontSize', 8.0, 'Color', [0.35, 0.35, 0.35], '
 
 xlabel('Simulation Round', 'FontWeight', 'bold', 'FontSize', 11, 'Color', 'k');
 ylabel('Number of Alive Nodes', 'FontWeight', 'bold', 'FontSize', 11, 'Color', 'k');
-title('Network Lifetime â€” Alive Nodes vs Simulation Round', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
+title('Network Lifetime — Alive Nodes vs Simulation Round', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
 xlim([1, 1000]); ylim([0, 52]);
 
 % -------------------------------------------------------------------------
@@ -263,29 +266,25 @@ hold on; box on; grid on;
 set(gca, 'Color', 'w', 'XColor', 'k', 'YColor', 'k', 'FontSize', 10, 'LineWidth', 1.1, 'FontName', font_name);
 set(gca, 'GridColor', [0.85, 0.85, 0.85], 'GridAlpha', 0.7);
 
-eff_means = [data_avg.LEACH.eff_mean, data_avg.DEEC.eff_mean, ...
-             data_avg.PEGASIS.eff_mean, data_avg.RL_Hybrid.eff_mean];
-eff_stds  = [data_avg.LEACH.eff_std, data_avg.DEEC.eff_std, ...
-             data_avg.PEGASIS.eff_std, data_avg.RL_Hybrid.eff_std];
+eff_means = [data_avg.LEACH.eff_agg, data_avg.DEEC.eff_agg, ...
+             data_avg.PEGASIS.eff_agg, data_avg.RL_Hybrid.eff_agg];
 
 for i = 1:4
     pk = protocols{i};
     bar(i, eff_means(i), 0.55, 'FaceColor', colors.(pk), 'EdgeColor', 'k', 'LineWidth', 1.1);
 end
 
-errorbar(1:4, eff_means, eff_stds, 'k.', 'LineWidth', 1.3, 'CapSize', 10);
-
 % Numerical mean values above bars
 for i = 1:4
-    text(i, eff_means(i) + eff_stds(i) + 18, sprintf('%.1f', eff_means(i)), ...
+    text(i, eff_means(i) + 14, sprintf('%.1f', eff_means(i)), ...
         'HorizontalAlignment', 'center', 'FontSize', 9.5, 'FontWeight', 'bold', 'Color', 'k', 'FontName', font_name);
 end
 
 set(gca, 'XTick', 1:4, 'XTickLabel', labels, 'FontWeight', 'bold');
 ylabel('Energy Efficiency (reports/J)', 'FontWeight', 'bold', 'FontSize', 11, 'Color', 'k');
-title('Final Energy Efficiency', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
+title('Final Energy Efficiency (Aggregate)', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
 xlim([0.3, 4.7]);
-ylim([0, 560]);
+ylim([0, 440]);
 
 % -------------------------------------------------------------------------
 % SUBPLOT 4: Energy Cost per Successfully Delivered Report (BAR CHART - Lower is better)
@@ -295,28 +294,24 @@ hold on; box on; grid on;
 set(gca, 'Color', 'w', 'XColor', 'k', 'YColor', 'k', 'FontSize', 10, 'LineWidth', 1.1, 'FontName', font_name);
 set(gca, 'GridColor', [0.85, 0.85, 0.85], 'GridAlpha', 0.7);
 
-bar_means = [data_avg.LEACH.eper_mean, data_avg.DEEC.eper_mean, ...
-             data_avg.PEGASIS.eper_mean, data_avg.RL_Hybrid.eper_mean];
-bar_stds  = [data_avg.LEACH.eper_std, data_avg.DEEC.eper_std, ...
-             data_avg.PEGASIS.eper_std, data_avg.RL_Hybrid.eper_std];
+bar_means = [data_avg.LEACH.eper_agg, data_avg.DEEC.eper_agg, ...
+             data_avg.PEGASIS.eper_agg, data_avg.RL_Hybrid.eper_agg];
 
 for i = 1:4
     pk = protocols{i};
     bar(i, bar_means(i), 0.55, 'FaceColor', colors.(pk), 'EdgeColor', 'k', 'LineWidth', 1.1);
 end
 
-errorbar(1:4, bar_means, bar_stds, 'k.', 'LineWidth', 1.3, 'CapSize', 10);
-
 for i = 1:4
-    text(i, bar_means(i) + bar_stds(i) + 0.0011, sprintf('%.4f J', bar_means(i)), ...
+    text(i, bar_means(i) + 0.0006, sprintf('%.6f J', bar_means(i)), ...
         'HorizontalAlignment', 'center', 'FontSize', 9.5, 'FontWeight', 'bold', 'Color', 'k', 'FontName', font_name);
 end
 
 set(gca, 'XTick', 1:4, 'XTickLabel', labels, 'FontWeight', 'bold');
 ylabel('Energy per Successfully Delivered Report (J/report)', 'FontWeight', 'bold', 'FontSize', 10.5, 'Color', 'k');
-title('Energy Cost per Successfully Delivered Report', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
+title('Energy Cost per Successfully Delivered Report (Aggregate)', 'FontSize', 12, 'FontWeight', 'bold', 'Color', 'k');
 xlim([0.3, 4.7]);
-ylim([0, 0.024]);
+ylim([0, 0.016]);
 
 % -------------------------------------------------------------------------
 % SUBPLOT 5: Failure Recovery and Route Adaptation (Rounds 400-600)
@@ -395,9 +390,8 @@ sgtitle({'RL-Hybrid vs Baseline Protocols (LEACH, DEEC, PEGASIS)'; ...
 
 % Save Figure 1 (Dashboard)
 fig1_png = fullfile(figDir, 'final_plots_dashboard.png');
-fig1_pdf = fullfile(figDir, 'final_plots_dashboard.pdf');
 saveas(fig1, fig1_png);
-try exportgraphics(fig1, fig1_pdf, 'ContentType', 'vector'); catch; end
+saveas(fig1, fullfile(analysisDir, 'final_plots_dashboard.png'));
 
 % =========================================================================
 % FIGURE 2: FINAL SUMMARY TABLE WITH KEY FINDINGS
@@ -415,7 +409,7 @@ table_col_names = {'Protocol', 'FND (rnd)', 'HND (rnd)', 'LND (rnd)', 'Final Ali
 table_data = cell(4, 10);
 for p = 1:length(protocols)
     pk = protocols{p};
-    
+
     table_data{p, 1} = labels{p};
     table_data{p, 2} = sprintf('%.1f \\pm %.1f', data_avg.(pk).fnd_mean, data_avg.(pk).fnd_std);
     if isnan(data_avg.(pk).hnd_mean)
@@ -428,8 +422,8 @@ for p = 1:length(protocols)
     table_data{p, 6} = sprintf('%.2f%% \\pm %.2f%%', data_avg.(pk).pdr_mean, data_avg.(pk).pdr_std);
     table_data{p, 7} = sprintf('%.0f \\pm %.0f', data_avg.(pk).del_mean, data_avg.(pk).del_std);
     table_data{p, 8} = sprintf('%.1f \\pm %.1f', data_avg.(pk).eng_mean, data_avg.(pk).eng_std);
-    table_data{p, 9} = sprintf('%.4f \\pm %.4f', data_avg.(pk).eper_mean, data_avg.(pk).eper_std);
-    table_data{p, 10} = sprintf('%.1f \\pm %.1f', data_avg.(pk).eff_mean, data_avg.(pk).eff_std);
+    table_data{p, 9} = sprintf('%.6f', data_avg.(pk).eper_agg);
+    table_data{p, 10} = sprintf('%.1f', data_avg.(pk).eff_agg);
 end
 
 % Title in Figure 2 (Black text)
@@ -464,14 +458,14 @@ for p = 1:4
     y = y_positions(p);
     fill(ax2, [0, 1, 1, 0], [y - 0.050, y - 0.050, y + 0.055, y + 0.055], row_bg{p}, ...
         'EdgeColor', [0.80, 0.80, 0.80], 'LineWidth', 0.8);
-    
+
     font_weight = 'normal';
     font_color = [0, 0, 0];
     if p == 4 % RL-Hybrid bold
         font_weight = 'bold';
         font_color = [0.35, 0.05, 0.45];
     end
-    
+
     for c = 1:10
         text(ax2, col_x(c), y, table_data{p, c}, 'FontSize', 9.2, 'FontWeight', font_weight, ...
             'Color', font_color, 'HorizontalAlignment', col_align{c}, 'FontName', font_name);
@@ -488,10 +482,10 @@ text(ax2, 0.02, 0.275, 'KEY PERFORMANCE FINDINGS (Statistically Supported Across
 key_findings_text = {
     sprintf('\\bullet \\bfHighest Packet Delivery Ratio (PDR):\\rm RL-Hybrid achieves %.2f%% \\pm %.2f%% (vs %.2f%% LEACH, %.2f%% DEEC, %.2f%% PEGASIS).', ...
         data_avg.RL_Hybrid.pdr_mean, data_avg.RL_Hybrid.pdr_std, data_avg.LEACH.pdr_mean, data_avg.DEEC.pdr_mean, data_avg.PEGASIS.pdr_mean), ...
-    sprintf('\\bullet \\bfHighest Energy Efficiency:\\rm RL-Hybrid delivers %.1f \\pm %.1f reports/J (vs %.1f LEACH, %.1f DEEC, %.1f PEGASIS).', ...
-        data_avg.RL_Hybrid.eff_mean, data_avg.RL_Hybrid.eff_std, data_avg.LEACH.eff_mean, data_avg.DEEC.eff_mean, data_avg.PEGASIS.eff_mean), ...
-    sprintf('\\bullet \\bfLowest Energy per Delivered Report:\\rm RL-Hybrid requires %.4f \\pm %.4f J/report (vs %.4f J LEACH, %.4f J DEEC, %.4f J PEGASIS).', ...
-        data_avg.RL_Hybrid.eper_mean, data_avg.RL_Hybrid.eper_std, data_avg.LEACH.eper_mean, data_avg.DEEC.eper_mean, data_avg.PEGASIS.eper_mean), ...
+    sprintf('\\bullet \\bfHighest Energy Efficiency:\\rm RL-Hybrid delivers %.1f reports/J (vs %.1f LEACH, %.1f DEEC, %.1f PEGASIS).', ...
+        data_avg.RL_Hybrid.eff_agg, data_avg.LEACH.eff_agg, data_avg.DEEC.eff_agg, data_avg.PEGASIS.eff_agg), ...
+    sprintf('\\bullet \\bfLowest Energy per Delivered Report:\\rm RL-Hybrid requires %.6f J/report (vs %.6f J LEACH, %.6f J DEEC, %.6f J PEGASIS).', ...
+        data_avg.RL_Hybrid.eper_agg, data_avg.LEACH.eper_agg, data_avg.DEEC.eper_agg, data_avg.PEGASIS.eper_agg), ...
     sprintf('\\bullet \\bfLatest First Node Dead (FND):\\rm RL-Hybrid maintains full 50-node network intact longest (%.1f \\pm %.1f rounds vs %.1f LEACH, %.1f DEEC, %.1f PEGASIS).', ...
         data_avg.RL_Hybrid.fnd_mean, data_avg.RL_Hybrid.fnd_std, data_avg.LEACH.fnd_mean, data_avg.DEEC.fnd_mean, data_avg.PEGASIS.fnd_mean), ...
     sprintf('\\bullet \\bfHalf Node Dead (HND) Tradeoff:\\rm PEGASIS achieves superior HND (%.1f \\pm %.1f rounds) due to aggressive single-packet aggregation, but at severely compromised delivery ratio (%.2f%% PDR).', ...
@@ -508,9 +502,8 @@ ylim(ax2, [0.02, 1.08]);
 
 % Save Figure 2 (Table)
 fig2_png = fullfile(figDir, 'final_comparison_table.png');
-fig2_pdf = fullfile(figDir, 'final_comparison_table.pdf');
 saveas(fig2, fig2_png);
-try exportgraphics(fig2, fig2_pdf, 'ContentType', 'vector'); catch; end
+saveas(fig2, fullfile(analysisDir, 'final_comparison_table.png'));
 
 % =========================================================================
 % PRINT FINAL COMPARISON TABLE TO COMMAND WINDOW
@@ -533,9 +526,9 @@ for p = 1:length(protocols)
     pdr_str   = sprintf('%.2f%% +/- %.2f%%', data_avg.(pk).pdr_mean, data_avg.(pk).pdr_std);
     del_str   = sprintf('%.0f +/- %.0f', data_avg.(pk).del_mean, data_avg.(pk).del_std);
     eng_str   = sprintf('%.1f +/- %.1f J', data_avg.(pk).eng_mean, data_avg.(pk).eng_std);
-    eper_str  = sprintf('%.4f +/- %.4f J', data_avg.(pk).eper_mean, data_avg.(pk).eper_std);
-    eff_str   = sprintf('%.1f +/- %.1f r/J', data_avg.(pk).eff_mean, data_avg.(pk).eff_std);
-    
+    eper_str  = sprintf('%.6f J', data_avg.(pk).eper_agg);
+    eff_str   = sprintf('%.1f r/J', data_avg.(pk).eff_agg);
+
     fprintf('%-10s | %-13s | %-13s | %-10s | %-13s | %-17s | %-16s | %-14s | %-19s | %-16s\n', ...
         labels{p}, fnd_str, hnd_str, data_avg.(pk).lnd_str, alive_str, pdr_str, del_str, eng_str, eper_str, eff_str);
 end
@@ -543,8 +536,5 @@ fprintf('=======================================================================
 
 fprintf('Generated Figure Files:\n');
 fprintf('  1. Figure 1 Dashboard: %s\n', fig1_png);
-if exist(fig1_pdf, 'file'); fprintf('                         %s\n', fig1_pdf); end
 fprintf('  2. Figure 2 Table    : %s\n', fig2_png);
-if exist(fig2_pdf, 'file'); fprintf('                         %s\n', fig2_pdf); end
 fprintf('\nExecution complete. All figures displayed on screen and saved to disk.\n');
-
